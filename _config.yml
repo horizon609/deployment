@@ -1,0 +1,44 @@
+permalink   : /:categories/:year/:title/
+markdown    : kramdown
+highlighter : pygments
+
+paginate: 2 #6
+comments: true
+paginate_path: "/page/:num"
+
+#摘要
+excerpt_separator: "<!--break-->"
+source: source
+destination: _site
+sass:
+  sass_dir: _scss
+  style: compressed
+
+# Site settings
+title: 首页
+description: "echoplex_x's blog"
+email: horizon609@gmail.com 
+baseurl: "" # the subpath of your site, e.g. /blog/
+#url: "http://yourdomain.com"
+url: "https://horizon609.github.io/"
+repository: "https://github.com/horizon609/horizon609.github.io"
+disqus_shortname: ""
+google_analytics: 
+
+# social footer
+social:
+  github:
+    slug: github
+    link: https://github.com/horizon609
+  facebook:
+    slug: facebook
+    link: 
+  twitter:
+    slug: twitter
+    link: 
+  instagram:
+    slug: instagram
+    link: 
+  linkedin:
+    slug: linkedin
+    link: 
