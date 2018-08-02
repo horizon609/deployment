@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title> 替换android系统签名的方法 | 首页</title>
+<title> Robust调研 | 首页</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
 <link rel="stylesheet" href="/css/main.css">
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="theme-color" content="#2ecc71">
-<link rel="canonical" href="https://horizon609.github.io//jekyll/update/2016/%E6%9B%BF%E6%8D%A2android%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E7%9A%84%E6%96%B9%E6%B3%95/">
+<link rel="canonical" href="https://horizon609.github.io//jekyll/update/2017/RobustRobust%E8%B0%83%E7%A0%94/">
 <link rel="alternate" type="application/rss+xml" title="首页" href="https://horizon609.github.io//feed.xml" />
 <script type="text/javascript">
 var _gaq = _gaq || [];
@@ -50,35 +50,52 @@ _gaq.push(['_trackPageview']);
         <section class="main-content">
           <article class="post">
   <header class="post-header">
-    <h1 class="post-title">替换android系统签名的方法</h1>
-    <p class="post-meta">Mar 2, 2016</p>
+    <h1 class="post-title">Robust调研</h1>
+    <p class="post-meta">Aug 18, 2017</p>
   </header>
   <div class="post-content">
-    <h2 id="section">研究背景</h2>
-<p>上一篇文章正向提供了一个思路：将一个第三方app变成一个系统级权限的app。而这片文章从另外一个角度出发，将rom中现有system级别的app换成自己的签名，再将自己的第三方app做同样的签名放进system/app下，同样实现了第三方app获取系统权限的目的。
-<!--break--></p>
-<h2 id="section-1">整体思路</h2>
-<p>前提：手机已经root
-通过将rom中具有系统权限的app进行重签名，从而以后直接push进/system/app的应用只要具有自己的前面就可以获取系统权限。</p>
-<h2 id="section-2">实现步骤</h2>
-<h3 id="datasystempackagesxmlshareduserid1000">1. 取出data/system中的packages.xml文件，查找关键字<code>sharedUserId="1000"</code>，如下所示</h3>
-<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="o">&lt;</span><span class="n">package</span> <span class="nb">name</span><span class="o">=</span><span class="s2">&quot;com.android.huawei.projectmenu&quot;</span> <span class="n">codePath</span><span class="o">=</span><span class="s2">&quot;/system/app/ProjectMenuAct.apk&quot;</span> <span class="n">nativeLibraryPath</span><span class="o">=</span><span class="s2">&quot;/data/app-lib/ProjectMenuAct&quot;</span> <span class="n">flags</span><span class="o">=</span><span class="s2">&quot;572997&quot;</span> <span class="n">ft</span><span class="o">=</span><span class="s2">&quot;1549f2cd0b8&quot;</span> <span class="n">it</span><span class="o">=</span><span class="s2">&quot;1549f2cd0b8&quot;</span> <span class="n">ut</span><span class="o">=</span><span class="s2">&quot;1549f2cd0b8&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;8&quot;</span> <span class="sb">`sharedUserId=&quot;1000&quot;`</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">sigs</span> <span class="n">count</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="o">&gt;</span>
-        <span class="o">&lt;</span><span class="n">cert</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="sr">/&gt;</span>
-<span class="sr">    &lt;/si</span><span class="n">gs</span><span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="n">signing</span><span class="o">-</span><span class="n">keyset</span> <span class="n">identifier</span><span class="o">=</span><span class="s2">&quot;1&quot;</span> <span class="sr">/&gt;</span>
-<span class="sr">&lt;/</span><span class="n">package</span><span class="o">&gt;</span></code></pre></div>
-<h3 id="shareduserid1000systemappframeworkapk">2. 通过sharedUserId=”1000”获取所有的包名，将system/app和framework中的这些部分apk拿出来进行重签名，之后在打包替换回去。</h3>
-<h3 id="section-3">3. 重启手机</h3>
-<h2 id="section-4">原理</h2>
-<p>每次启动android操作系统会把这些系统应用随机排序一次，把遇到的第一个系统应用放在index=1的位置上。如果只是重签名了第一个位置上的系统应用，那么它的签名是改了。可是下次它的位置变了，然后系统发现它和其他的系统app签名不匹配会把它直接删除。只能把所有的系统应用都重签一次。</p>
+    <h2 id="section">何时加载</h2>
+<blockquote>
+  <ul>
+    <li>越早加载越好，可以修复发生在靠前的bug。一般放在Application的onCreate里；</li>
+    <li>注意事项：使用<strong>multidex</strong>的项目，需要在dex全部加载完后执行补丁加载；
+<!--break--></li>
+  </ul>
+</blockquote>
+<h2 id="patch">禁止某个patch的方式</h2>
+<p>需要在服务端把该条补丁删除，下次打补丁的时候，即便本地有这条被移除的补丁，也不会执行它。感觉这种方式不太灵活</p>
+<h2 id="section-1">补丁、插桩优先级顺序</h2>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">if</span><span class="o">(</span><span class="n">hasPatch</span><span class="o">){</span>
+    <span class="n">patch</span> <span class="n">execute</span><span class="o">;</span>
+    <span class="n">other</span> <span class="n">Extension</span> <span class="n">ignore</span><span class="o">;</span>
+    <span class="n">notify</span> <span class="n">listeners</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="k">for</span><span class="o">(</span><span class="nl">extension:</span><span class="n">extensions</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">execute</span> <span class="n">extension</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">extension</span><span class="o">.</span><span class="na">isSupport</span><span class="o">){</span>
+            <span class="n">notify</span> <span class="n">other</span> <span class="n">extensions</span> <span class="o">:</span> <span class="n">extension</span> <span class="n">is</span> <span class="n">executed</span><span class="o">~</span>
+            <span class="k">break</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+<h2 id="this">对于返回this，支持而不友好</h2>
+<p>对于方法的返回值是this的情况现在支持不好，比如builder模式，但在制作补丁代码时，可以通过如下方式来解决，增加一个类来包装一下(如下面的B类)</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">method</span> <span class="nf">a</span><span class="o">(){</span>
+  <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+<span class="o">}</span></code></pre></div>
+<p>改为</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">method</span> <span class="nf">a</span><span class="o">(){</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nf">B</span><span class="o">().</span><span class="na">setThis</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">getThis</span><span class="o">();</span>
+<span class="o">}</span></code></pre></div>
+<h2 id="section-2">缺点</h2>
+<p>目前<strong>更改构造函数</strong>和<strong>新增字段</strong>都在内测阶段，所以无法实现。但是也有不优雅的解决方案：<strong>增加一个新类</strong></p>
     <aside class="share">
       <span>Share this: </span>
-      <a href="http://twitter.com/share?text=替换android系统签名的方法&amp;url=https://horizon609.github.io//jekyll/update/2016/%E6%9B%BF%E6%8D%A2android%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E7%9A%84%E6%96%B9%E6%B3%95/&amp;hashtags=web,dev,blog,soudev&amp;via=nandomoreirame"
+      <a href="http://twitter.com/share?text=Robust调研&amp;url=https://horizon609.github.io//jekyll/update/2017/RobustRobust%E8%B0%83%E7%A0%94/&amp;hashtags=web,dev,blog,soudev&amp;via=nandomoreirame"
       onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
         <i class="icon icon-twitter-rounded"></i>
       </a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https://horizon609.github.io//jekyll/update/2016/%E6%9B%BF%E6%8D%A2android%E7%B3%BB%E7%BB%9F%E7%AD%BE%E5%90%8D%E7%9A%84%E6%96%B9%E6%B3%95/"
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://horizon609.github.io//jekyll/update/2017/RobustRobust%E8%B0%83%E7%A0%94/"
       onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
         <i class="icon icon-facebook-rounded"></i>
       </a>
@@ -90,8 +107,8 @@ _gaq.push(['_trackPageview']);
     <div id="disqus_thread"></div>
     <script type="text/javascript">
       var disqus_shortname = '';
-      var disqus_identifier = '/jekyll/update/2016/替换android系统签名的方法';
-      var disqus_title = '替换android系统签名的方法';
+      var disqus_identifier = '/jekyll/update/2017/RobustRobust调研';
+      var disqus_title = 'Robust调研';
       var disqus_url = 'https://horizon609.github.io/';
       /*var disqus_developer = 1;*/
       (function() {

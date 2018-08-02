@@ -1,0 +1,35 @@
+<h2 id="s">情景（S）</h2>
+<p>在本地开启混淆的debug模式下，发现主页的ui全部没了，但是抓包后端接口数据正常。
+<!-- break --></p>
+
+<p>问题如下图:
+<img src="https://github.com/horizon609/horizon609.github.io/tree/master/images/混淆反射小记/boss_main.png" alt="cmd-markdown-logo" /></p>
+
+<h2 id="t">任务（T）</h2>
+
+<p>找出端上ui不显示的问题</p>
+
+<h2 id="a">行动（A）</h2>
+
+<h3 id="workbenchdatabuildert-extends-workbenchconfig-t-handleworkbenchconfigint-type">1. 位到是WorkbenchDataBuilder类的<t extends="" workbenchconfig=""> T handleWorkbenchConfig(int type)方法出了问题。</t></h3>
+
+<h3 id="workbenchconfigworkbenchconfigint">2. 用于处理首页WorkbenchConfig数据排序的方法。主页的各类元素显示的数据都继承于WorkbenchConfig，每个子类提供两个构造函数，一个默认构造函数；一个是带有int参数的构造函数。</h3>
+
+<h3 id="handleworkbenchconfigconstructor-constructor--tgetclassgetdeclaredconstructornew-classintclass">3. 在handleWorkbenchConfig方法中有一处反射调用：Constructor constructor = t.getClass().getDeclaredConstructor(new Class[]{int.class});</h3>
+
+<h3 id="int">4. 因为反射行为发生在运行时，那么对于编译器来说，它是不认为有任何地方调了这个带int参数的构造器的.</h3>
+
+<h3 id="workbenchconfig">5. 所有继承WorkbenchConfig的子类都没有加反混淆</h3>
+
+<h3 id="int-1">6. 基于上述，编译器优化掉了所有带有int参数的构造器</h3>
+
+<h3 id="constructor-constructor--tgetclassgetdeclaredconstructornew-classintclassnsuchmethodexception">7. 那么在调用Constructor constructor = t.getClass().getDeclaredConstructor(new Class[]{int.class});就会报NSuchMethodException受检异常，该异常被捕获，如下图所示：</h3>
+<p><img src="https://github.com/horizon609/horizon609.github.io/tree/master/images/混淆反射小记/handle_workbench_config.png" alt="cmd-markdown-logo" /></p>
+
+<p><img src="https://github.com/horizon609/horizon609.github.io/tree/master/images/混淆反射小记/bash_conten.png" alt="cmd-markdown-logo" /></p>
+
+<h3 id="apksmaliint">8. 为了验证上述想法，反编译了apk找到相关smali文件，确认确实只编译了默认构造器而无int参数构造器</h3>
+<p><img src="https://github.com/horizon609/horizon609.github.io/tree/master/images/混淆反射小记/unti_dex.png" alt="cmd-markdown-logo" /></p>
+
+<h2 id="r">结果（R）</h2>
+<p>加上WorkbenchConfig子类的反混淆问题解决。</p>
